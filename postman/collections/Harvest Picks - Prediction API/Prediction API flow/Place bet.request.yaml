@@ -1,0 +1,26 @@
+$kind: http-request
+url: "{{baseUrl}}/api/prediction/events/{{eventId}}/bets"
+method: POST
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{farmerToken}}
+  Idempotency-Key: "{{betIdempotencyKey}}"
+body:
+  type: json
+  content: |-
+    {
+      "optionId": "{{optionId}}",
+      "stakePoints": {{stakePoints}}
+    }
+scripts:
+  - type: beforeRequest
+    code: if (!pm.collectionVariables.get('betIdempotencyKey')) pm.collectionVariables.set('betIdempotencyKey', pm.variables.replaceIn('{{$guid}}'));
+    language: text/javascript
+  - type: afterResponse
+    code: |-
+      pm.test('Bet is created', function () { pm.response.to.have.status(201); });
+      const body = pm.response.json();
+      pm.test('New bet is not a replay', function () { pm.expect(body.replayed).to.eql(false); pm.expect(body.bet.status).to.eql('ACTIVE'); });
+      pm.collectionVariables.set('betId', body.bet.id);
+    language: text/javascript
+order: 6000

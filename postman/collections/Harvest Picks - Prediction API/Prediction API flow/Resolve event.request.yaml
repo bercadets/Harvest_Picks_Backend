@@ -1,0 +1,19 @@
+$kind: http-request
+url: "{{baseUrl}}/api/prediction/events/{{eventId}}/resolve"
+method: POST
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{moderatorToken}}
+body:
+  type: json
+  content: |-
+    {
+      "winningOptionId": "{{winningOptionId}}"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Moderator resolves the event', function () { pm.response.to.have.status(200); });
+      pm.test('Resolved event is marked RESOLVED', function () { const body = pm.response.json(); pm.expect(body.event.status).to.eql('RESOLVED'); pm.expect(body.settlement).to.be.an('object'); });
+    language: text/javascript
+order: 11000

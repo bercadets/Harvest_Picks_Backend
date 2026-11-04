@@ -42,6 +42,15 @@ async function findCrop(id, db = pool) {
   return rows[0] || null;
 }
 
+// Names and units for crops that already have deposits, whether or not they are still accepted.
+async function findCropsByIds(ids, db = pool) {
+  const { rows } = await db.query(
+    'SELECT id, name, unit, category, is_active FROM crops WHERE id = ANY($1::uuid[])',
+    [ids]
+  );
+  return rows;
+}
+
 async function listCrops({ onlyActive }, db = pool) {
   const { rows } = await db.query(
     `${CROP_WITH_RATE} WHERE ($1::boolean = false OR c.is_active) ORDER BY lower(c.name), c.id`,
@@ -234,7 +243,7 @@ async function listRestocks(itemId, limit, db = pool) {
 }
 
 module.exports = {
-  insertCrop, findCrop, listCrops, lockCrop, findCropIdByName, updateCrop,
+  insertCrop, findCrop, findCropsByIds, listCrops, lockCrop, findCropIdByName, updateCrop,
   findCurrentRate, closeCurrentRate, insertRate, listRates,
   insertItem, findItem, findItemsByIds, listItems, lockItem, updateItem,
   decrementStock, incrementStock, findItemBasics,

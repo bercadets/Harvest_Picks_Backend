@@ -1,0 +1,35 @@
+$kind: http-request
+url: "{{baseUrl}}/api/prediction/events"
+method: POST
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{moderatorToken}}
+body:
+  type: json
+  content: |-
+    {
+      "question": "Will Postman pass the prediction API integration test?",
+      "description": "Disposable integration-test event.",
+      "maxBetPoints": 100,
+      "houseMargin": "0.05",
+      "noWinnerPolicy": "REFUND_ALL",
+      "closesAt": "{{eventClosesAt}}",
+      "options": [
+        { "label": "Yes", "seedPoints": 100 },
+        { "label": "No", "seedPoints": 100 }
+      ]
+    }
+scripts:
+  - type: beforeRequest
+    code: pm.collectionVariables.set('eventClosesAt', new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString());
+    language: text/javascript
+  - type: afterResponse
+    code: |-
+      pm.test('Moderator creates an event', function () { pm.response.to.have.status(201); });
+      const body = pm.response.json();
+      pm.test('Created event has two options', function () { pm.expect(body.id).to.be.a('string'); pm.expect(body.options).to.have.lengthOf.at.least(2); });
+      pm.collectionVariables.set('eventId', body.id);
+      pm.collectionVariables.set('optionId', body.options[0].id);
+      pm.collectionVariables.set('winningOptionId', body.options[0].id);
+    language: text/javascript
+order: 4000

@@ -1,0 +1,14 @@
+$kind: http-request
+url: "{{baseUrl}}/api/prediction/bets/mine?limit=10"
+method: GET
+headers:
+  Authorization: Bearer {{farmerToken}}
+queryParams:
+  limit: "10"
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Farmer bet history is returned', function () { pm.response.to.have.status(200); });
+      pm.test('History includes the created bet', function () { const body = pm.response.json(); pm.expect(body.bets).to.be.an('array'); pm.expect(body.bets.some(function (bet) { return bet.id === pm.collectionVariables.get('betId'); })).to.eql(true); });
+    language: text/javascript
+order: 8000

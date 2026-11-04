@@ -1,0 +1,16 @@
+$kind: collection
+description: Integration test flow for prediction events and bets. Set farmerName/farmerPassword and moderatorName/moderatorPassword before running. The moderator account must already exist, and the farmer must have at least stakePoints available.
+variables:
+  baseUrl: http://localhost:3000
+  farmerName: ""
+  farmerPassword: ""
+  moderatorName: ""
+  moderatorPassword: ""
+  farmerToken: ""
+  moderatorToken: ""
+  eventId: ""
+  optionId: ""
+  winningOptionId: ""
+  betId: ""
+  betIdempotencyKey: ""
+  stakePoints: "1"
