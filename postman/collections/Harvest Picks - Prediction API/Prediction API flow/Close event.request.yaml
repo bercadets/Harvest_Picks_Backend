@@ -1,0 +1,12 @@
+$kind: http-request
+url: "{{baseUrl}}/api/prediction/events/{{eventId}}/close"
+method: POST
+headers:
+  Authorization: Bearer {{moderatorToken}}
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Moderator closes the event', function () { pm.response.to.have.status(200); });
+      pm.test('Event is closed', function () { pm.expect(pm.response.json().status).to.eql('CLOSED'); });
+    language: text/javascript
+order: 10000

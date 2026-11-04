@@ -1,0 +1,15 @@
+$kind: http-request
+url: "{{baseUrl}}/api/prediction/events?status=OPEN&limit=10"
+method: GET
+headers:
+  Authorization: Bearer {{farmerToken}}
+queryParams:
+  status: OPEN
+  limit: "10"
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Open events can be listed', function () { pm.response.to.have.status(200); });
+      pm.test('List response has events and a cursor', function () { const body = pm.response.json(); pm.expect(body.events).to.be.an('array'); pm.expect(body).to.have.property('nextCursor'); });
+    language: text/javascript
+order: 3000

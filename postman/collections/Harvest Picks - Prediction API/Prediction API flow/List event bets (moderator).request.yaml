@@ -1,0 +1,12 @@
+$kind: http-request
+url: "{{baseUrl}}/api/prediction/events/{{eventId}}/bets"
+method: GET
+headers:
+  Authorization: Bearer {{moderatorToken}}
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Moderator can list event bets', function () { pm.response.to.have.status(200); });
+      pm.test('Moderator response includes farmer and backing details', function () { const body = pm.response.json(); pm.expect(body.bets).to.be.an('array'); const bet = body.bets.find(function (item) { return item.id === pm.collectionVariables.get('betId'); }); pm.expect(bet).to.be.an('object'); pm.expect(bet).to.have.property('farmerUserId'); pm.expect(bet).to.have.property('backingPoints'); });
+    language: text/javascript
+order: 9000

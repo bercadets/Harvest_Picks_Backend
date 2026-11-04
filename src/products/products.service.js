@@ -322,8 +322,36 @@ async function reserveStock({ items }, client) {
   return reserved;
 }
 
+/**
+ * Barter: names and units for crops that already have deposits. Unlike getCurrentCropRate this still
+ * answers for crops that were switched off after the deposit was made. Unknown ids are simply left out.
+ */
+async function getCropsByIds({ cropIds }, client) {
+  if (!Array.isArray(cropIds)) throw new Error('getCropsByIds: cropIds must be an array');
+  if (cropIds.length === 0) return [];
+  const rows = await repo.findCropsByIds([...new Set(cropIds)], client);
+  return rows.map((row) => ({
+    cropId: row.id,
+    name: row.name,
+    unit: row.unit,
+    category: row.category,
+    isActive: row.is_active,
+  }));
+}
+
+/**
+ * Barter: names for items that already appear on orders. Still answers for items hidden after the
+ * purchase. Unknown ids are simply left out.
+ */
+async function getItemsByIds({ itemIds }, client) {
+  if (!Array.isArray(itemIds)) throw new Error('getItemsByIds: itemIds must be an array');
+  if (itemIds.length === 0) return [];
+  const rows = await repo.findItemsByIds([...new Set(itemIds)], client);
+  return rows.map((row) => ({ itemId: row.id, name: row.name, isVisible: row.is_visible }));
+}
+
 module.exports = {
   listCrops, getCrop, createCrop, updateCrop, changeCropRate, listCropRates,
   listItems, getItem, createItem, updateItem, changeItemPrice, listItemPrices, restockItem, listRestocks,
-  getCurrentCropRate, getCurrentItemPrices, reserveStock,
+  getCurrentCropRate, getCurrentItemPrices, reserveStock, getCropsByIds, getItemsByIds,
 };

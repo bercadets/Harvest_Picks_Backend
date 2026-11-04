@@ -2,3 +2,7 @@ name: New Environment
 values:
   - key: baseUrl
     value: ''
+  - key: aToken
+    value: ''
+  - key: aId
+    value: ''

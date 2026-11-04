@@ -1,0 +1,21 @@
+$kind: http-request
+url: "{{baseUrl}}/api/prediction/events/{{eventId}}/bets"
+method: POST
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{farmerToken}}
+  Idempotency-Key: "{{betIdempotencyKey}}"
+body:
+  type: json
+  content: |-
+    {
+      "optionId": "{{optionId}}",
+      "stakePoints": {{stakePoints}}
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Identical retry is successful', function () { pm.response.to.have.status(200); });
+      pm.test('Retry returns the original bet', function () { const body = pm.response.json(); pm.expect(body.replayed).to.eql(true); pm.expect(body.bet.id).to.eql(pm.collectionVariables.get('betId')); });
+    language: text/javascript
+order: 7000
