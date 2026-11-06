@@ -6,3 +6,47 @@ values:
     value: ''
   - key: aId
     value: ''
+  - key: bToken
+    value: ''
+  - key: bId
+    value: ''
+  - key: modToken
+    value: ''
+  - key: modId
+    value: ''
+  - key: cropId
+    value: ''
+  - key: porkId
+    value: ''
+  - key: fertId
+    value: ''
+  - key: secretId
+    value: ''
+  - key: d1Id
+    value: ''
+  - key: d2Id
+    value: ''
+  - key: d3Id
+    value: ''
+  - key: d4Id
+    value: ''
+  - key: notifId
+    value: ''
+  - key: orderId
+    value: ''
+  - key: orderToken
+    value: ''
+  - key: d5Id
+    value: ''
+  - key: eventId
+    value: ''
+  - key: yesId
+    value: ''
+  - key: noId
+    value: ''
+  - key: betAId
+    value: ''
+  - key: betBId
+    value: ''
+  - key: topupId
+    value: ''
