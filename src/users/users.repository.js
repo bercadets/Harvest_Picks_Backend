@@ -78,6 +78,59 @@ async function touchLastLogin(userId, db = pool) {
   await db.query('UPDATE users SET last_login_at = now() WHERE id = $1', [userId]);
 }
 
+// ---- Login lockout (progressive) ----
+
+// Locks the user row so two parallel wrong-password requests are counted one at a time.
+async function lockUserRowForLogin(userId, db = pool) {
+  const { rows } = await db.query(
+    `SELECT failed_login_count, lockout_level,
+            (locked_until IS NOT NULL AND locked_until > clock_timestamp()) AS is_locked,
+            EXTRACT(EPOCH FROM (clock_timestamp() - last_failed_login_at)) AS secs_since_failure
+       FROM users
+      WHERE id = $1
+        FOR UPDATE`,
+    [userId]
+  );
+  return rows[0] || null;
+}
+
+async function getLockRemainingSeconds(userId, db = pool) {
+  const { rows } = await db.query(
+    `SELECT COALESCE(
+              CEIL(GREATEST(EXTRACT(EPOCH FROM (locked_until - clock_timestamp())), 0)),
+              0
+            )::int AS remaining
+       FROM users
+      WHERE id = $1`,
+    [userId]
+  );
+  return rows[0] ? rows[0].remaining : 0;
+}
+
+async function saveLoginFailure({ userId, failedCount, lockoutLevel, lockSeconds }, db = pool) {
+  await db.query(
+    `UPDATE users
+        SET failed_login_count = $2,
+            lockout_level = $3,
+            last_failed_login_at = clock_timestamp(),
+            locked_until = CASE WHEN $4::int > 0
+                                THEN clock_timestamp() + make_interval(secs => $4::int)
+                                ELSE NULL END
+      WHERE id = $1`,
+    [userId, failedCount, lockoutLevel, lockSeconds]
+  );
+}
+
+async function clearLoginFailures(userId, db = pool) {
+  await db.query(
+    `UPDATE users
+        SET failed_login_count = 0, lockout_level = 0,
+            last_failed_login_at = NULL, locked_until = NULL
+      WHERE id = $1`,
+    [userId]
+  );
+}
+
 module.exports = {
   findByNormalizedName,
   findProfileById,
@@ -86,4 +139,8 @@ module.exports = {
   updateName,
   upsertProfile,
   touchLastLogin,
+  lockUserRowForLogin,
+  getLockRemainingSeconds,
+  saveLoginFailure,
+  clearLoginFailures,
 };
